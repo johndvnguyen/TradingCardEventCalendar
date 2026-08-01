@@ -1,85 +1,103 @@
 # Trading Card Event Calendar
 
+A lightweight event calendar web application for trading card games. Schedule events, share registration QR codes, and let players register online with server-enforced capacity limits.
+
 ## Features
 
-- **Calendar view** — month, week, and list views powered by FullCalendar
-- **Schedule events** — create events with name, game type, start time, and player capacity
-- **View & edit events** — click an event to see details or edit/delete it
-- **SQLite persistence** — data stored locally in a SQLite database
-- **Docker deployment** — run everything with a single `docker compose up`
-
-## Entities
-
-| Entity | Fields |
-|--------|--------|
-| **Event** | id, name, gameType, startDatetime, playerCapacity |
-| **Player** | id, name |
-| **GameType** | id, name, playFormats, maxCapacity, minPlayers |
-
-Three game types are seeded on first run: Magic: The Gathering, Pokemon TCG, and Yu-Gi-Oh!.
+- **React + FullCalendar** — month, week, and list views
+- **Schedule events** — name, game type, start/end time, player capacity
+- **Registration** — unique link + QR code per event; capacity enforced on the server
+- **Calendar invites** — download `.ics` files via `react-icalendar-link` (Google Calendar, Outlook, Apple Calendar)
+- **SQLite + C# API** — ASP.NET Core backend with Entity Framework Core
+- **Docker deployment** — single `docker compose up` builds React UI and API
 
 ## Quick Start (Docker)
-
-**Prerequisites:** [Docker Desktop](https://www.docker.com/products/docker-desktop/)
 
 ```bash
 docker compose up --build
 ```
 
-Open [http://localhost:8080](http://localhost:8080) in your browser.
+Open [http://localhost:8080](http://localhost:8080).
 
-The SQLite database is persisted in a Docker volume (`calendar-data`).
+## Local Development
 
-To stop:
+### Backend
 
-```bash
-docker compose down
-```
-
-## Local Development (without Docker)
-
-**Prerequisites:** [.NET 10 SDK](https://dotnet.microsoft.com/download)
+Requires [.NET 10 SDK](https://dotnet.microsoft.com/download).
 
 ```bash
 cd backend/TradingCardEventCalendar.Api
 dotnet run
 ```
 
-Open [http://localhost:5000](http://localhost:5000).
+API runs at [http://localhost:5000](http://localhost:5000).
+
+### Frontend
+
+Requires Node.js 18+ (20 recommended).
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+UI runs at [http://localhost:5173](http://localhost:5173) and proxies `/api` to the backend.
+
+Production build output goes to `backend/TradingCardEventCalendar.Api/wwwroot`:
+
+```bash
+cd frontend
+npm run build
+```
+
+Then run the backend to serve the built React app.
+
+## Routes
+
+| Route | Description |
+|-------|-------------|
+| `/` | Calendar home |
+| `/event/:token` | Event page with QR code and calendar invite |
+| `/register/:token` | Player registration form |
 
 ## API Endpoints
 
 | Method | Path | Description |
 |--------|------|-------------|
-| GET | `/api/events` | List events (optional `?start=` and `?end=` filters) |
-| GET | `/api/events/{id}` | Get a single event |
-| POST | `/api/events` | Create an event |
-| PUT | `/api/events/{id}` | Update an event |
-| DELETE | `/api/events/{id}` | Delete an event |
+| GET | `/api/events` | List events |
+| POST | `/api/events` | Create event |
+| PUT | `/api/events/{id}` | Update event |
+| DELETE | `/api/events/{id}` | Delete event |
+| GET | `/api/events/public/{token}` | Public event details |
+| POST | `/api/events/public/{token}/register` | Register player (409 when full) |
 | GET | `/api/gametypes` | List game types |
-| GET | `/api/players` | List players |
-| POST | `/api/players` | Create a player |
 
 ## Project Structure
 
 ```
 TradingCardEventCalendar/
+├── frontend/              # React + Vite + FullCalendar + react-icalendar-link
 ├── backend/TradingCardEventCalendar.Api/
-│   ├── Controllers/       # REST API controllers
-│   ├── Data/              # EF Core DbContext
-│   ├── Models/            # Entity models
-│   └── wwwroot/           # Calendar frontend (HTML/CSS/JS)
+│   ├── Controllers/
+│   ├── Data/
+│   ├── Models/
+│   ├── Services/
+│   └── wwwroot/           # React production build output
 ├── Dockerfile
-├── docker-compose.yml
-└── TradingCardEventCalendar.sln
+└── docker-compose.yml
 ```
 
+## Schema changes
+
+If upgrading from an older database, delete `backend/TradingCardEventCalendar.Api/Data/calendar.db` and restart so EF Core can recreate the schema (includes `EndDatetime`, `RegistrationToken`, and `EventRegistrations`).
 
 TODO:
 Core functionality seems to be working was able to test adding events, adding registrations
 BUG Event Registration page does not update Spots Left value when submitting (display only issue). Manipulating the db directly or opening multiple registration pages correctly rejects registrations, but the displayed count is wrong and awkward
 CLEAN UP bloat code
-Add ICS generation library
+Rethink the templating, I think the prompt actually meant that it should have variable fields based on game type
+Ensure ICS for registration only shows after the player is registered
 
 ## Design write-up (~1 page)** answering:
      - How did you determine and enforce how many people can attend an event? Where does capacity live, and what happens under concurrent registrations for the last seat?

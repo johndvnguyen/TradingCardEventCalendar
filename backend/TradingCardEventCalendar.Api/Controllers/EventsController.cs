@@ -54,6 +54,13 @@ public class EventsController : ControllerBase
     [HttpPost]
     public async Task<ActionResult<EventDto>> Create(Event evt)
     {
+        var validationError = ValidateEventTimes(evt);
+        if (validationError is not null)
+            return BadRequest(new ErrorResponse(validationError));
+
+        if (evt.EndDatetime == default)
+            evt.EndDatetime = evt.StartDatetime.AddHours(3);
+
         evt.RegistrationToken = Guid.NewGuid();
         _db.Events.Add(evt);
         await _db.SaveChangesAsync();
@@ -70,6 +77,10 @@ public class EventsController : ControllerBase
         if (id != evt.Id)
             return BadRequest();
 
+        var validationError = ValidateEventTimes(evt);
+        if (validationError is not null)
+            return BadRequest(new ErrorResponse(validationError));
+
         var existing = await _db.Events.FindAsync(id);
         if (existing is null)
             return NotFound();
@@ -84,6 +95,7 @@ public class EventsController : ControllerBase
         existing.Name = evt.Name;
         existing.GameType = evt.GameType;
         existing.StartDatetime = evt.StartDatetime;
+        existing.EndDatetime = evt.EndDatetime;
         existing.PlayerCapacity = evt.PlayerCapacity;
 
         await _db.SaveChangesAsync();
@@ -104,6 +116,14 @@ public class EventsController : ControllerBase
 
     private string GetBaseUrl() =>
         $"{Request.Scheme}://{Request.Host}";
+
+    private static string? ValidateEventTimes(Event evt)
+    {
+        if (evt.EndDatetime != default && evt.EndDatetime <= evt.StartDatetime)
+            return "End time must be after start time.";
+
+        return null;
+    }
 
     private async Task<Dictionary<int, int>> GetRegistrationCountsAsync(IEnumerable<int> eventIds)
     {

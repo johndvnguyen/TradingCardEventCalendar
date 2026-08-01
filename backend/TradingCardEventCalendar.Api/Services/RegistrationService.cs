@@ -75,6 +75,7 @@ public class RegistrationService
             evt.Name,
             evt.GameType,
             evt.StartDatetime,
+            evt.EndDatetime,
             evt.PlayerCapacity,
             registrationCount,
             spotsRemaining,
@@ -93,6 +94,7 @@ public class RegistrationService
             evt.Name,
             evt.GameType,
             evt.StartDatetime,
+            evt.EndDatetime,
             evt.PlayerCapacity,
             evt.RegistrationToken,
             registrationCount,
@@ -103,8 +105,8 @@ public class RegistrationService
     }
 
     public static string BuildRegistrationUrl(string baseUrl, Guid token) =>
-        $"{baseUrl.TrimEnd('/')}/register.html?token={token:D}";
+        $"{baseUrl.TrimEnd('/')}/register/{token:D}";
 
     public static string BuildEventPageUrl(string baseUrl, Guid token) =>
-        $"{baseUrl.TrimEnd('/')}/event.html?token={token:D}";
+        $"{baseUrl.TrimEnd('/')}/event/{token:D}";
 }

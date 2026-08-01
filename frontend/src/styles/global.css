@@ -45,6 +45,9 @@ main {
 }
 
 .btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   padding: 0.5rem 1rem;
   border: none;
   border-radius: var(--radius);
@@ -52,6 +55,7 @@ main {
   font-weight: 500;
   cursor: pointer;
   transition: background 0.15s;
+  text-decoration: none;
 }
 
 .btn-primary {
@@ -81,7 +85,7 @@ main {
   background: var(--danger-hover);
 }
 
-#calendar {
+.calendar-shell {
   background: var(--surface);
   border-radius: var(--radius);
   padding: 1rem;
@@ -119,25 +123,33 @@ main {
   border-radius: 4px;
 }
 
-dialog {
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal {
   border: 1px solid var(--border);
   border-radius: var(--radius);
   background: var(--surface);
   color: var(--text);
   padding: 1.5rem;
   width: min(420px, 90vw);
+  max-height: 90vh;
+  overflow-y: auto;
 }
 
-dialog::backdrop {
-  background: rgba(0, 0, 0, 0.6);
-}
-
-dialog h2 {
+.modal h2 {
   font-size: 1.1rem;
   margin-bottom: 1.25rem;
 }
 
-dialog label {
+.modal label {
   display: block;
   font-size: 0.8rem;
   color: var(--text-muted);
@@ -145,12 +157,14 @@ dialog label {
   margin-top: 0.75rem;
 }
 
-dialog label:first-of-type {
+.modal label:first-of-type {
   margin-top: 0;
 }
 
-dialog input,
-dialog select {
+.modal input,
+.modal select,
+.page-card input,
+.page-card select {
   width: 100%;
   padding: 0.5rem 0.75rem;
   background: var(--bg);
@@ -160,8 +174,9 @@ dialog select {
   font-size: 0.875rem;
 }
 
-dialog input:focus,
-dialog select:focus {
+.modal input:focus,
+.modal select:focus,
+.page-card input:focus {
   outline: 2px solid var(--primary);
   outline-offset: 1px;
 }
@@ -171,27 +186,42 @@ dialog select:focus {
   gap: 0.5rem;
   margin-top: 1.5rem;
   justify-content: flex-end;
+  flex-wrap: wrap;
 }
 
-#view-details {
+.dialog-actions-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.detail-list {
   display: grid;
   grid-template-columns: auto 1fr;
   gap: 0.5rem 1rem;
   font-size: 0.875rem;
+  margin-bottom: 1.5rem;
 }
 
-#view-details dt {
+.detail-list.compact {
+  margin-bottom: 1rem;
+}
+
+.detail-list dt {
   color: var(--text-muted);
 }
 
-#view-details dd {
+.detail-list dd {
   margin: 0;
 }
 
 .header-link {
+  display: inline-block;
   color: var(--text-muted);
   text-decoration: none;
   font-size: 0.875rem;
+  margin-bottom: 1rem;
 }
 
 .header-link:hover {
@@ -217,48 +247,41 @@ dialog select:focus {
   margin-bottom: 0.5rem;
 }
 
-.detail-list {
-  display: grid;
-  grid-template-columns: auto 1fr;
-  gap: 0.5rem 1rem;
-  font-size: 0.875rem;
-  margin-bottom: 1.5rem;
-}
-
-.detail-list.compact {
-  margin-bottom: 1rem;
-}
-
-.detail-list dt {
+.page-card label {
+  display: block;
+  font-size: 0.8rem;
   color: var(--text-muted);
+  margin-bottom: 0.25rem;
 }
 
-.detail-list dd {
-  margin: 0;
-}
-
-.qr-section {
+.qr-section,
+.ics-section {
   border-top: 1px solid var(--border);
   padding-top: 1.25rem;
+  margin-top: 1.25rem;
   text-align: center;
 }
 
-.qr-section .hint {
+.ics-section.compact {
+  border-top: none;
+  padding-top: 0;
+  margin-top: 0;
+  margin-bottom: 1rem;
+  text-align: left;
+}
+
+.hint {
   color: var(--text-muted);
   font-size: 0.8rem;
   margin-bottom: 1rem;
 }
 
-#qrcode {
+.qrcode-wrap {
   display: inline-block;
   padding: 0.75rem;
   background: var(--bg);
   border-radius: var(--radius);
   margin-bottom: 1rem;
-}
-
-#qrcode img {
-  display: block;
 }
 
 .registration-link-row {
@@ -269,40 +292,7 @@ dialog select:focus {
 
 .registration-link-row input {
   flex: 1;
-  padding: 0.5rem 0.75rem;
-  background: var(--bg);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  color: var(--text);
   font-size: 0.75rem;
-}
-
-.qr-section .btn-primary {
-  display: inline-block;
-  text-decoration: none;
-}
-
-.page-card label {
-  display: block;
-  font-size: 0.8rem;
-  color: var(--text-muted);
-  margin-bottom: 0.25rem;
-}
-
-.page-card input[type="text"] {
-  width: 100%;
-  padding: 0.5rem 0.75rem;
-  background: var(--bg);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  color: var(--text);
-  font-size: 0.875rem;
-  margin-bottom: 1rem;
-}
-
-.page-card input:focus {
-  outline: 2px solid var(--primary);
-  outline-offset: 1px;
 }
 
 .message {
@@ -329,4 +319,3 @@ dialog select:focus {
   border: 1px solid #2ea043;
   color: #8ddf9a;
 }
-
