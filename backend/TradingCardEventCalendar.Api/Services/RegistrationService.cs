@@ -29,41 +29,56 @@ public class RegistrationService
         await using var transaction =
             await _db.Database.BeginTransactionAsync(IsolationLevel.Serializable);
 
-        var evt = await _db.Events
-            .FirstOrDefaultAsync(e => e.RegistrationToken == token);
-
-        if (evt is null)
-            return (false, "Event not found.", null);
-
-        var registrationCount = await _db.EventRegistrations
-            .CountAsync(r => r.EventId == evt.Id);
-
-        if (registrationCount >= evt.PlayerCapacity)
-            return (false, "This event is full. Registration is closed.", null);
-
-        var nameTaken = await _db.EventRegistrations
-            .AnyAsync(r =>
-                r.EventId == evt.Id &&
-                r.Player.Name.ToLower() == normalizedName.ToLower());
-
-        if (nameTaken)
-            return (false, "This name is already registered for this event.", null);
-
-        var player = new Player { Name = normalizedName };
-        var registration = new EventRegistration
+        try
         {
-            EventId = evt.Id,
-            Player = player,
-            RegisteredAt = DateTime.UtcNow
-        };
+            // SQLite uses deferred locks by default; touch the event row first so
+            // concurrent registrations for the same event serialize on this write.
+            var eventLocked = await _db.Events
+                .Where(e => e.RegistrationToken == token)
+                .ExecuteUpdateAsync(s => s.SetProperty(e => e.Name, e => e.Name));
 
-        _db.EventRegistrations.Add(registration);
-        await _db.SaveChangesAsync();
-        await transaction.CommitAsync();
+            if (eventLocked == 0)
+                return (false, "Event not found.", null);
 
-        return (true, null, new RegisterResponse(
-            "You're registered! See you at the event.",
-            normalizedName));
+            var evt = await _db.Events
+                .AsNoTracking()
+                .FirstAsync(e => e.RegistrationToken == token);
+
+            var registrationCount = await _db.EventRegistrations
+                .CountAsync(r => r.EventId == evt.Id);
+
+            if (registrationCount >= evt.PlayerCapacity)
+                return (false, "This event is full. Registration is closed.", null);
+
+            var nameTaken = await _db.EventRegistrations
+                .AnyAsync(r =>
+                    r.EventId == evt.Id &&
+                    r.Player.Name.ToLower() == normalizedName.ToLower());
+
+            if (nameTaken)
+                return (false, "This name is already registered for this event.", null);
+
+            var player = new Player { Name = normalizedName };
+            var registration = new EventRegistration
+            {
+                EventId = evt.Id,
+                Player = player,
+                RegisteredAt = DateTime.UtcNow
+            };
+
+            _db.EventRegistrations.Add(registration);
+            await _db.SaveChangesAsync();
+            await transaction.CommitAsync();
+
+            return (true, null, new RegisterResponse(
+                "You're registered! See you at the event.",
+                normalizedName));
+        }
+        catch
+        {
+            await transaction.RollbackAsync();
+            throw;
+        }
     }
 
     public static EventPublicDto ToPublicDto(Event evt, int registrationCount, string baseUrl)
