@@ -137,7 +137,9 @@ Removed:
 -An Extra tsconfig.app.json was created and is unused
 -EventPageUrl was not really being used as event pages are not needed just registration and the calendar itself
 
-AI input:
+Also used Cursor to review security vulnerabilities such as SQL injection and create a plan.
+
+Initial AI input:
 Create a small calendar web application that uses a docker container for local deployment. The calendar will have an option to schedule events, view events. The backend will use a sqlite db. The backend code should use c#.
 the basic entities are Entities:
 Event 

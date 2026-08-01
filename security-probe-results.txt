@@ -1,0 +1,30 @@
+﻿=== 1. GET /api/events (baseline) ===
+Status: 200 Body length: 2
+
+=== 2. POST /api/events unauthenticated (XSS in name) ===
+Status: 201
+Created id=1 name=<script>alert(1)</script> token=cab30596-913b-41f8-b978-433a391a7d2f
+
+=== 3. GET public event (verify XSS stored as literal) ===
+Status: 200 name field: <script>alert(1)</script>
+
+=== 4. POST register SQLi payload ===
+Status: 200 Body: {"message":"You're registered! See you at the event.","playerName":"' OR 1=1--"}
+
+=== 5. GET invalid GUID token ===
+
+=== 6. POST oversized name (201 chars) ===
+Unexpected 2xx success
+
+=== 7. CORS preflight ===
+Access-Control-Allow-Origin: *
+
+=== 8. Unauthenticated DELETE ===
+Status: 204 (204 = deleted without auth)
+
+=== 9. Concurrent registration (capacity=1) ===
+Concurrent results: FAIL 1 405, FAIL 2 405, FAIL 3 405, FAIL 4 405, FAIL 5 405
+Final registrationCount= spotsRemaining= isFull=
+
+=== 10. SQLi in GET query params ===
+Status: 400
