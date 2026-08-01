@@ -12,6 +12,7 @@ public class AppDbContext : DbContext
     public DbSet<Event> Events => Set<Event>();
     public DbSet<Player> Players => Set<Player>();
     public DbSet<GameType> GameTypes => Set<GameType>();
+    public DbSet<EventRegistration> EventRegistrations => Set<EventRegistration>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -19,6 +20,7 @@ public class AppDbContext : DbContext
         {
             entity.Property(e => e.Name).HasMaxLength(200);
             entity.Property(e => e.GameType).HasMaxLength(100);
+            entity.HasIndex(e => e.RegistrationToken).IsUnique();
         });
 
         modelBuilder.Entity<Player>(entity =>
@@ -30,6 +32,21 @@ public class AppDbContext : DbContext
         {
             entity.Property(g => g.Name).HasMaxLength(100);
             entity.Property(g => g.PlayFormats).HasMaxLength(500);
+        });
+
+        modelBuilder.Entity<EventRegistration>(entity =>
+        {
+            entity.HasOne(r => r.Event)
+                .WithMany(e => e.Registrations)
+                .HasForeignKey(r => r.EventId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(r => r.Player)
+                .WithMany(p => p.Registrations)
+                .HasForeignKey(r => r.PlayerId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasIndex(r => new { r.EventId, r.PlayerId }).IsUnique();
         });
 
         modelBuilder.Entity<GameType>().HasData(

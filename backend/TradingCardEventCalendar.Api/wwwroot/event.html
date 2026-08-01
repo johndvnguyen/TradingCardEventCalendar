@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Event — Trading Card Event Calendar</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <header>
+    <a href="/" class="header-link">&larr; Calendar</a>
+    <h1>Event Details</h1>
+  </header>
+
+  <main class="page-card">
+    <div id="loading">Loading event…</div>
+    <div id="error" class="message message-error" hidden></div>
+
+    <div id="event-content" hidden>
+      <h2 id="event-name"></h2>
+      <dl class="detail-list">
+        <dt>Game</dt><dd id="event-game"></dd>
+        <dt>Start</dt><dd id="event-start"></dd>
+        <dt>Registered</dt><dd id="event-registrations"></dd>
+      </dl>
+
+      <section class="qr-section">
+        <h3>Registration QR Code</h3>
+        <p class="hint">Players scan this code to open the registration form.</p>
+        <div id="qrcode"></div>
+        <div class="registration-link-row">
+          <input type="text" id="registration-url" readonly>
+          <button type="button" id="copy-link-btn" class="btn btn-secondary">Copy</button>
+        </div>
+        <a id="register-link" class="btn btn-primary" href="#">Open registration form</a>
+      </section>
+    </div>
+  </main>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <script src="js/event.js"></script>
+</body>
+</html>

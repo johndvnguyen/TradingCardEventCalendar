@@ -187,3 +187,146 @@ dialog select:focus {
 #view-details dd {
   margin: 0;
 }
+
+.header-link {
+  color: var(--text-muted);
+  text-decoration: none;
+  font-size: 0.875rem;
+}
+
+.header-link:hover {
+  color: var(--text);
+}
+
+.page-card {
+  max-width: 480px;
+  margin: 1.5rem auto;
+  padding: 1.5rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.page-card h2 {
+  font-size: 1.25rem;
+  margin-bottom: 1rem;
+}
+
+.page-card h3 {
+  font-size: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.detail-list {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.5rem 1rem;
+  font-size: 0.875rem;
+  margin-bottom: 1.5rem;
+}
+
+.detail-list.compact {
+  margin-bottom: 1rem;
+}
+
+.detail-list dt {
+  color: var(--text-muted);
+}
+
+.detail-list dd {
+  margin: 0;
+}
+
+.qr-section {
+  border-top: 1px solid var(--border);
+  padding-top: 1.25rem;
+  text-align: center;
+}
+
+.qr-section .hint {
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  margin-bottom: 1rem;
+}
+
+#qrcode {
+  display: inline-block;
+  padding: 0.75rem;
+  background: var(--bg);
+  border-radius: var(--radius);
+  margin-bottom: 1rem;
+}
+
+#qrcode img {
+  display: block;
+}
+
+.registration-link-row {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.registration-link-row input {
+  flex: 1;
+  padding: 0.5rem 0.75rem;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text);
+  font-size: 0.75rem;
+}
+
+.qr-section .btn-primary {
+  display: inline-block;
+  text-decoration: none;
+}
+
+.page-card label {
+  display: block;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin-bottom: 0.25rem;
+}
+
+.page-card input[type="text"] {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text);
+  font-size: 0.875rem;
+  margin-bottom: 1rem;
+}
+
+.page-card input:focus {
+  outline: 2px solid var(--primary);
+  outline-offset: 1px;
+}
+
+.message {
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius);
+  font-size: 0.875rem;
+  margin-bottom: 1rem;
+}
+
+.message-error {
+  background: rgba(229, 83, 75, 0.15);
+  border: 1px solid var(--danger);
+  color: #f5a8a4;
+}
+
+.message-warning {
+  background: rgba(255, 193, 7, 0.12);
+  border: 1px solid #c9a000;
+  color: #f0d878;
+}
+
+.message-success {
+  background: rgba(46, 160, 67, 0.15);
+  border: 1px solid #2ea043;
+  color: #8ddf9a;
+}
+

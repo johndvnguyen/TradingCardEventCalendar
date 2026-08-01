@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using TradingCardEventCalendar.Api.Data;
+using TradingCardEventCalendar.Api.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -9,6 +10,7 @@ var connectionString = $"Data Source={dbPath}";
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlite(connectionString));
 
+builder.Services.AddScoped<RegistrationService>();
 builder.Services.AddControllers();
 builder.Services.AddCors(options =>
 {

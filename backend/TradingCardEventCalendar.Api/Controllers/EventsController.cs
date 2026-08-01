@@ -1,7 +1,9 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using TradingCardEventCalendar.Api.Data;
+using TradingCardEventCalendar.Api.Dto;
 using TradingCardEventCalendar.Api.Models;
+using TradingCardEventCalendar.Api.Services;
 
 namespace TradingCardEventCalendar.Api.Controllers;
 
@@ -17,7 +19,7 @@ public class EventsController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<Event>>> GetAll(
+    public async Task<ActionResult<IEnumerable<EventDto>>> GetAll(
         [FromQuery] DateTime? start,
         [FromQuery] DateTime? end)
     {
@@ -29,25 +31,37 @@ public class EventsController : ControllerBase
         if (end.HasValue)
             query = query.Where(e => e.StartDatetime <= end.Value);
 
-        return await query.OrderBy(e => e.StartDatetime).ToListAsync();
+        var events = await query.OrderBy(e => e.StartDatetime).ToListAsync();
+        var counts = await GetRegistrationCountsAsync(events.Select(e => e.Id));
+
+        var baseUrl = GetBaseUrl();
+        return events
+            .Select(e => RegistrationService.ToDto(e, counts.GetValueOrDefault(e.Id, 0), baseUrl))
+            .ToList();
     }
 
     [HttpGet("{id:int}")]
-    public async Task<ActionResult<Event>> GetById(int id)
+    public async Task<ActionResult<EventDto>> GetById(int id)
     {
         var evt = await _db.Events.FindAsync(id);
         if (evt is null)
             return NotFound();
 
-        return evt;
+        var count = await _db.EventRegistrations.CountAsync(r => r.EventId == id);
+        return RegistrationService.ToDto(evt, count, GetBaseUrl());
     }
 
     [HttpPost]
-    public async Task<ActionResult<Event>> Create(Event evt)
+    public async Task<ActionResult<EventDto>> Create(Event evt)
     {
+        evt.RegistrationToken = Guid.NewGuid();
         _db.Events.Add(evt);
         await _db.SaveChangesAsync();
-        return CreatedAtAction(nameof(GetById), new { id = evt.Id }, evt);
+
+        return CreatedAtAction(
+            nameof(GetById),
+            new { id = evt.Id },
+            RegistrationService.ToDto(evt, 0, GetBaseUrl()));
     }
 
     [HttpPut("{id:int}")]
@@ -59,6 +73,13 @@ public class EventsController : ControllerBase
         var existing = await _db.Events.FindAsync(id);
         if (existing is null)
             return NotFound();
+
+        var registrationCount = await _db.EventRegistrations.CountAsync(r => r.EventId == id);
+        if (evt.PlayerCapacity < registrationCount)
+        {
+            return BadRequest(new ErrorResponse(
+                $"Capacity cannot be set below current registrations ({registrationCount})."));
+        }
 
         existing.Name = evt.Name;
         existing.GameType = evt.GameType;
@@ -79,5 +100,21 @@ public class EventsController : ControllerBase
         _db.Events.Remove(evt);
         await _db.SaveChangesAsync();
         return NoContent();
+    }
+
+    private string GetBaseUrl() =>
+        $"{Request.Scheme}://{Request.Host}";
+
+    private async Task<Dictionary<int, int>> GetRegistrationCountsAsync(IEnumerable<int> eventIds)
+    {
+        var ids = eventIds.ToList();
+        if (ids.Count == 0)
+            return [];
+
+        return await _db.EventRegistrations
+            .Where(r => ids.Contains(r.EventId))
+            .GroupBy(r => r.EventId)
+            .Select(g => new { EventId = g.Key, Count = g.Count() })
+            .ToDictionaryAsync(x => x.EventId, x => x.Count);
     }
 }

@@ -7,4 +7,7 @@ public class Event
     public required string GameType { get; set; }
     public DateTime StartDatetime { get; set; }
     public int PlayerCapacity { get; set; }
+    public Guid RegistrationToken { get; set; }
+
+    public ICollection<EventRegistration> Registrations { get; set; } = [];
 }

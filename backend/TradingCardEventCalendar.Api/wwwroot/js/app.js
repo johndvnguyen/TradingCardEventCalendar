@@ -45,7 +45,12 @@ function toCalendarEvent(evt) {
     start: evt.startDatetime,
     extendedProps: {
       gameType: evt.gameType,
-      playerCapacity: evt.playerCapacity
+      playerCapacity: evt.playerCapacity,
+      registrationCount: evt.registrationCount,
+      spotsRemaining: evt.spotsRemaining,
+      isFull: evt.isFull,
+      eventPageUrl: evt.eventPageUrl,
+      registrationToken: evt.registrationToken
     }
   };
 }
@@ -94,12 +99,28 @@ function openEditDialog(event) {
 }
 
 function openViewDialog(event) {
+  const props = event.extendedProps;
+  const registered = props.registrationCount ?? 0;
+  const capacity = props.playerCapacity;
+  const spotsText = props.isFull
+    ? `${registered} / ${capacity} (Full)`
+    : `${registered} / ${capacity} (${props.spotsRemaining ?? capacity - registered} spots left)`;
+
   document.getElementById('view-title').textContent = event.title;
   document.getElementById('view-details').innerHTML = `
-    <dt>Game</dt><dd>${event.extendedProps.gameType}</dd>
+    <dt>Game</dt><dd>${props.gameType}</dd>
     <dt>Start</dt><dd>${formatDatetime(event.start)}</dd>
-    <dt>Capacity</dt><dd>${event.extendedProps.playerCapacity} players</dd>
+    <dt>Registered</dt><dd>${spotsText}</dd>
   `;
+
+  const eventPageLink = document.getElementById('view-event-page-btn');
+  if (props.eventPageUrl) {
+    eventPageLink.href = props.eventPageUrl;
+    eventPageLink.hidden = false;
+  } else {
+    eventPageLink.hidden = true;
+  }
+
   viewDialog.dataset.eventId = event.id;
   viewDialog.showModal();
 }
