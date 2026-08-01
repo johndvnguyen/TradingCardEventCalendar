@@ -37,8 +37,6 @@ export const api = {
     return fetchJson<EventDto[]>(`${API_BASE}/events${query ? `?${query}` : ''}`);
   },
 
-  getEvent: (id: number) => fetchJson<EventDto>(`${API_BASE}/events/${id}`),
-
   createEvent: (payload: EventPayload) =>
     fetchJson<EventDto>(`${API_BASE}/events`, {
       method: 'POST',

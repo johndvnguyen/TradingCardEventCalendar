@@ -103,9 +103,15 @@ Ensure ICS for registration only shows after the player is registered
      - How did you determine and enforce how many people can attend an event? Where does capacity live, and what happens under concurrent registrations for the last seat?
      - How does your template system work, and what would adding a 4th game (or a non-card game) require?
      - What did you deliberately cut or fake to stay in the timebox, and what would you build next?
+     While not in the requirements some better form of user registration based on email. Its currently validating just based on the name value which is bad. But also theres no requirement so putting off for later iterations
 
 ## AI usage note (a few sentences):** which tools you used and for what, and one example of AI output you rejected or had to fix.
 I used cursor for most of the code generation with the following initial input. I followed up with some additions to the eventRegistration and QR code features I missed. I also used AI to do some troubleshooting with my docker and wsl installation as my personal machine did not have these
+
+Removed:
+-The entire PlayerController as the only interaction with the players is on registration. Theres no player maniuplation outside the context of an event
+-getEvent frontend endpoint
+-An Extra tsconfig.app.json was created and is unused
 
 AI input:
 Create a small calendar web application that uses a docker container for local deployment. The calendar will have an option to schedule events, view events. The backend will use a sqlite db. The backend code should use c#.
