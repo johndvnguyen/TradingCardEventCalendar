@@ -1,0 +1,12 @@
+services:
+  calendar:
+    build: .
+    ports:
+      - "8080:8080"
+    volumes:
+      - calendar-data:/app/data
+    environment:
+      ASPNETCORE_ENVIRONMENT: Docker
+
+volumes:
+  calendar-data:
