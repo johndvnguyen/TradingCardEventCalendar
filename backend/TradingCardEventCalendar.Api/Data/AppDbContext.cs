@@ -69,19 +69,19 @@ public class AppDbContext : DbContext
             new PlayFormat
             {
                 Id = 1, GameTypeId = 1, Name = "Standard",
-                DefaultCapacity = 32, MinPlayers = 2, MaxCapacity = null,
+                DefaultCapacity = 30, MinPlayers = 2, MaxCapacity = 30,
                 DefaultDurationHours = 3, ShowMinPlayersOnEvent = false
             },
             new PlayFormat
             {
                 Id = 2, GameTypeId = 1, Name = "Modern",
-                DefaultCapacity = 32, MinPlayers = 2, MaxCapacity = null,
+                DefaultCapacity = 30, MinPlayers = 2, MaxCapacity = 30,
                 DefaultDurationHours = 3, ShowMinPlayersOnEvent = false
             },
             new PlayFormat
             {
                 Id = 3, GameTypeId = 1, Name = "Commander",
-                DefaultCapacity = 16, MinPlayers = 2, MaxCapacity = null,
+                DefaultCapacity = 16, MinPlayers = 2, MaxCapacity = 30,
                 DefaultDurationHours = 3, ShowMinPlayersOnEvent = false
             },
             new PlayFormat
@@ -93,31 +93,31 @@ public class AppDbContext : DbContext
             new PlayFormat
             {
                 Id = 5, GameTypeId = 2, Name = "Standard",
-                DefaultCapacity = 24, MinPlayers = 2, MaxCapacity = null,
+                DefaultCapacity = 24, MinPlayers = 2, MaxCapacity = 30,
                 DefaultDurationHours = 3, ShowMinPlayersOnEvent = false
             },
             new PlayFormat
             {
                 Id = 6, GameTypeId = 2, Name = "Expanded",
-                DefaultCapacity = 24, MinPlayers = 2, MaxCapacity = null,
+                DefaultCapacity = 24, MinPlayers = 2, MaxCapacity = 30,
                 DefaultDurationHours = 3, ShowMinPlayersOnEvent = false
             },
             new PlayFormat
             {
                 Id = 7, GameTypeId = 2, Name = "Limited",
-                DefaultCapacity = 16, MinPlayers = 2, MaxCapacity = null,
+                DefaultCapacity = 16, MinPlayers = 2, MaxCapacity = 30,
                 DefaultDurationHours = 3, ShowMinPlayersOnEvent = false
             },
             new PlayFormat
             {
                 Id = 8, GameTypeId = 3, Name = "Advanced",
-                DefaultCapacity = 16, MinPlayers = 2, MaxCapacity = null,
+                DefaultCapacity = 16, MinPlayers = 2, MaxCapacity = 30,
                 DefaultDurationHours = 3, ShowMinPlayersOnEvent = false
             },
             new PlayFormat
             {
                 Id = 9, GameTypeId = 3, Name = "Traditional",
-                DefaultCapacity = 16, MinPlayers = 2, MaxCapacity = null,
+                DefaultCapacity = 16, MinPlayers = 2, MaxCapacity = 30,
                 DefaultDurationHours = 3, ShowMinPlayersOnEvent = false
             },
             new PlayFormat
