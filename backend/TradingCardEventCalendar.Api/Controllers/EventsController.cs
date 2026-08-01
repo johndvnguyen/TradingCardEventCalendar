@@ -40,17 +40,6 @@ public class EventsController : ControllerBase
             .ToList();
     }
 
-    [HttpGet("{id:int}")]
-    public async Task<ActionResult<EventDto>> GetById(int id)
-    {
-        var evt = await _db.Events.FindAsync(id);
-        if (evt is null)
-            return NotFound();
-
-        var count = await _db.EventRegistrations.CountAsync(r => r.EventId == id);
-        return RegistrationService.ToDto(evt, count, GetBaseUrl());
-    }
-
     [HttpPost]
     public async Task<ActionResult<EventDto>> Create(Event evt)
     {

@@ -22,16 +22,6 @@ public class GameTypesController : ControllerBase
         return await _db.GameTypes.OrderBy(g => g.Name).ToListAsync();
     }
 
-    [HttpGet("{id:int}")]
-    public async Task<ActionResult<GameType>> GetById(int id)
-    {
-        var gameType = await _db.GameTypes.FindAsync(id);
-        if (gameType is null)
-            return NotFound();
-
-        return gameType;
-    }
-
     [HttpPost]
     public async Task<ActionResult<GameType>> Create(GameType gameType)
     {
