@@ -1,12 +1,12 @@
 import { useEffect, useState } from 'react';
 import { api } from '../api/client';
-import type { EventDto, EventPayload, GameType } from '../types';
+import type { EventDto, EventPayload, GameTypeTemplate } from '../types';
 import { EventCalendar } from '../components/EventCalendar';
 import { EventFormDialog } from '../components/EventFormDialog';
 import { EventViewDialog } from '../components/EventViewDialog';
 
 export function CalendarPage() {
-  const [gameTypes, setGameTypes] = useState<GameType[]>([]);
+  const [gameTypes, setGameTypes] = useState<GameTypeTemplate[]>([]);
   const [refreshKey, setRefreshKey] = useState(0);
   const [formOpen, setFormOpen] = useState(false);
   const [initialDate, setInitialDate] = useState<string | undefined>();

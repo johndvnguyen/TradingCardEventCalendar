@@ -2,8 +2,9 @@ import { FormEvent, useCallback, useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { api } from '../api/client';
 import type { EventPublicDto } from '../types';
-import { formatDatetime } from '../utils/dates';
+import { buildEventDescription } from '../utils/eventDisplay';
 import { CalendarInviteButton } from '../components/CalendarInviteButton';
+import { EventDetailsList } from '../components/EventDetailsList';
 
 export function RegisterPage() {
   const { token } = useParams<{ token: string }>();
@@ -70,21 +71,18 @@ export function RegisterPage() {
     );
   }
 
-  const description = `${event.gameType} trading card event.`;
+  const description = buildEventDescription(
+    event.gameType,
+    event.playFormat,
+    event.playerCapacity,
+    event.minPlayers,
+    event.showMinPlayersOnEvent,
+  );
 
   return (
     <main className="page-card">
       <h2>{event.name}</h2>
-      <dl className="detail-list compact">
-        <dt>Game</dt>
-        <dd>{event.gameType}</dd>
-        <dt>Start</dt>
-        <dd>{formatDatetime(event.startDatetime)}</dd>
-        <dt>End</dt>
-        <dd>{formatDatetime(event.endDatetime)}</dd>
-        <dt>Spots left</dt>
-        <dd>{event.isFull ? 'None — event is full' : String(event.spotsRemaining)}</dd>
-      </dl>
+      <EventDetailsList event={{ ...event, name: event.name }} compact />
 
       {event.isFull && (
         <div className="message message-warning">This event is full. Registration is closed.</div>
@@ -112,15 +110,19 @@ export function RegisterPage() {
       )}
 
       {success && <div className="message message-success">{success}</div>}
-      {success && <div className="ics-section compact">
-        <CalendarInviteButton
-          title={event.name}
-          description={description}
-          startDatetime={event.startDatetime}
-          endDatetime={event.endDatetime}
-          registrationUrl={event.registrationUrl}
-        />
-      </div>}
+
+      {success && (
+        <div className="ics-section compact">
+          <CalendarInviteButton
+            title={event.name}
+            description={description}
+            startDatetime={event.startDatetime}
+            endDatetime={event.endDatetime}
+            registrationUrl={event.registrationUrl}
+          />
+        </div>
+      )}
+
       <p className="hint">
         <Link to={`/event/${token}`}>View event page</Link>
       </p>

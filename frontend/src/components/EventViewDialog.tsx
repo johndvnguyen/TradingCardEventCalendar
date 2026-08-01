@@ -1,7 +1,8 @@
 import { Link } from 'react-router-dom';
 import type { EventDto } from '../types';
-import { formatDatetime } from '../utils/dates';
+import { buildEventDescription } from '../utils/eventDisplay';
 import { CalendarInviteButton } from './CalendarInviteButton';
+import { EventDetailsList } from './EventDetailsList';
 
 interface EventViewDialogProps {
   event: EventDto | null;
@@ -12,26 +13,27 @@ interface EventViewDialogProps {
 export function EventViewDialog({ event, onClose, onEdit }: EventViewDialogProps) {
   if (!event) return null;
 
-  const registeredText = event.isFull
-    ? `${event.registrationCount} / ${event.playerCapacity} (Full)`
-    : `${event.registrationCount} / ${event.playerCapacity} (${event.spotsRemaining} spots left)`;
-
-  const description = `${event.gameType} trading card event. Capacity: ${event.playerCapacity} players.`;
+  const description = buildEventDescription(
+    event.gameType,
+    event.playFormat,
+    event.playerCapacity,
+    event.minPlayers,
+    event.showMinPlayersOnEvent,
+  );
 
   return (
     <div className="modal-backdrop" onClick={onClose}>
       <dialog open className="modal" onClick={(e) => e.stopPropagation()}>
         <h2>{event.name}</h2>
-        <dl className="detail-list">
-          <dt>Game</dt>
-          <dd>{event.gameType}</dd>
-          <dt>Start</dt>
-          <dd>{formatDatetime(event.startDatetime)}</dd>
-          <dt>End</dt>
-          <dd>{formatDatetime(event.endDatetime)}</dd>
-          <dt>Registered</dt>
-          <dd>{registeredText}</dd>
-        </dl>
+        <EventDetailsList
+          event={{
+            ...event,
+            registrationCount: event.registrationCount,
+            spotsRemaining: event.spotsRemaining,
+            isFull: event.isFull,
+          }}
+          showRegistration
+        />
 
         <div className="dialog-actions-stack">
           <CalendarInviteButton

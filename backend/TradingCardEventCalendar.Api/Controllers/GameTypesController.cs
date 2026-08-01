@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using TradingCardEventCalendar.Api.Data;
-using TradingCardEventCalendar.Api.Models;
+using TradingCardEventCalendar.Api.Dto;
 
 namespace TradingCardEventCalendar.Api.Controllers;
 
@@ -17,16 +17,27 @@ public class GameTypesController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<GameType>>> GetAll()
+    public async Task<ActionResult<IEnumerable<GameTypeTemplateDto>>> GetAll()
     {
-        return await _db.GameTypes.OrderBy(g => g.Name).ToListAsync();
-    }
+        var gameTypes = await _db.GameTypes
+            .Include(g => g.PlayFormats)
+            .OrderBy(g => g.Name)
+            .ToListAsync();
 
-    [HttpPost]
-    public async Task<ActionResult<GameType>> Create(GameType gameType)
-    {
-        _db.GameTypes.Add(gameType);
-        await _db.SaveChangesAsync();
-        return CreatedAtAction(nameof(GetById), new { id = gameType.Id }, gameType);
+        return gameTypes.Select(g => new GameTypeTemplateDto(
+            g.Id,
+            g.Name,
+            g.PlayFormats
+                .OrderBy(p => p.Name)
+                .Select(p => new PlayFormatDto(
+                    p.Id,
+                    p.Name,
+                    p.DefaultCapacity,
+                    p.MinPlayers,
+                    p.MaxCapacity,
+                    p.DefaultDurationHours,
+                    p.ShowMinPlayersOnEvent))
+                .ToList()))
+            .ToList();
     }
 }

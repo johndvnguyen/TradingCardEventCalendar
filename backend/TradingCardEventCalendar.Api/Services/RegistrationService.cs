@@ -74,9 +74,12 @@ public class RegistrationService
         return new EventPublicDto(
             evt.Name,
             evt.GameType,
+            evt.PlayFormat,
             evt.StartDatetime,
             evt.EndDatetime,
             evt.PlayerCapacity,
+            evt.MinPlayers,
+            evt.ShowMinPlayersOnEvent,
             registrationCount,
             spotsRemaining,
             spotsRemaining == 0,
@@ -87,26 +90,25 @@ public class RegistrationService
     {
         var spotsRemaining = Math.Max(0, evt.PlayerCapacity - registrationCount);
         var registrationUrl = BuildRegistrationUrl(baseUrl, evt.RegistrationToken);
-        var eventPageUrl = BuildEventPageUrl(baseUrl, evt.RegistrationToken);
 
         return new EventDto(
             evt.Id,
             evt.Name,
             evt.GameType,
+            evt.PlayFormat,
             evt.StartDatetime,
             evt.EndDatetime,
             evt.PlayerCapacity,
+            evt.MinPlayers,
+            evt.ShowMinPlayersOnEvent,
             evt.RegistrationToken,
             registrationCount,
             spotsRemaining,
             spotsRemaining == 0,
-            registrationUrl,
-            eventPageUrl);
+            registrationUrl);
     }
 
     public static string BuildRegistrationUrl(string baseUrl, Guid token) =>
         $"{baseUrl.TrimEnd('/')}/register/{token:D}";
 
-    public static string BuildEventPageUrl(string baseUrl, Guid token) =>
-        $"{baseUrl.TrimEnd('/')}/event/{token:D}";
 }

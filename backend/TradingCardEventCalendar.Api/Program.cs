@@ -11,6 +11,7 @@ builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlite(connectionString));
 
 builder.Services.AddScoped<RegistrationService>();
+builder.Services.AddScoped<TemplateValidationService>();
 builder.Services.AddControllers();
 builder.Services.AddCors(options =>
 {

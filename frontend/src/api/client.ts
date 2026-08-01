@@ -3,9 +3,9 @@ import type {
   EventDto,
   EventPayload,
   EventPublicDto,
-  GameType,
+  GameTypeTemplate,
   RegisterResponse,
-} from './types';
+} from '../types';
 
 const API_BASE = '/api';
 
@@ -27,7 +27,7 @@ async function fetchJson<T>(url: string, options?: RequestInit): Promise<T> {
 }
 
 export const api = {
-  getGameTypes: () => fetchJson<GameType[]>(`${API_BASE}/gametypes`),
+  getGameTypes: () => fetchJson<GameTypeTemplate[]>(`${API_BASE}/gametypes`),
 
   getEvents: (start?: string, end?: string) => {
     const params = new URLSearchParams();

@@ -3,8 +3,9 @@ import { Link, useParams } from 'react-router-dom';
 import { QRCodeSVG } from 'qrcode.react';
 import { api } from '../api/client';
 import type { EventPublicDto } from '../types';
-import { formatDatetime } from '../utils/dates';
+import { buildEventDescription } from '../utils/eventDisplay';
 import { CalendarInviteButton } from '../components/CalendarInviteButton';
+import { EventDetailsList } from '../components/EventDetailsList';
 
 export function EventPage() {
   const { token } = useParams<{ token: string }>();
@@ -50,11 +51,13 @@ export function EventPage() {
     );
   }
 
-  const registeredText = event.isFull
-    ? `${event.registrationCount} / ${event.playerCapacity} (Full)`
-    : `${event.registrationCount} / ${event.playerCapacity} (${event.spotsRemaining} spots left)`;
-
-  const description = `${event.gameType} trading card event. Capacity: ${event.playerCapacity} players.`;
+  const description = buildEventDescription(
+    event.gameType,
+    event.playFormat,
+    event.playerCapacity,
+    event.minPlayers,
+    event.showMinPlayersOnEvent,
+  );
 
   return (
     <main className="page-card">
@@ -63,16 +66,13 @@ export function EventPage() {
       </Link>
 
       <h2>{event.name}</h2>
-      <dl className="detail-list">
-        <dt>Game</dt>
-        <dd>{event.gameType}</dd>
-        <dt>Start</dt>
-        <dd>{formatDatetime(event.startDatetime)}</dd>
-        <dt>End</dt>
-        <dd>{formatDatetime(event.endDatetime)}</dd>
-        <dt>Registered</dt>
-        <dd>{registeredText}</dd>
-      </dl>
+      <EventDetailsList
+        event={{
+          ...event,
+          name: event.name,
+        }}
+        showRegistration
+      />
 
       <section className="qr-section">
         <h3>Registration QR Code</h3>

@@ -12,10 +12,12 @@ namespace TradingCardEventCalendar.Api.Controllers;
 public class EventsController : ControllerBase
 {
     private readonly AppDbContext _db;
+    private readonly TemplateValidationService _templateValidation;
 
-    public EventsController(AppDbContext db)
+    public EventsController(AppDbContext db, TemplateValidationService templateValidation)
     {
         _db = db;
+        _templateValidation = templateValidation;
     }
 
     [HttpGet]
@@ -50,13 +52,16 @@ public class EventsController : ControllerBase
         if (evt.EndDatetime == default)
             evt.EndDatetime = evt.StartDatetime.AddHours(3);
 
+        var (templateOk, templateError) = await _templateValidation.ApplyTemplateAsync(evt);
+        if (!templateOk)
+            return BadRequest(new ErrorResponse(templateError!));
+
         evt.RegistrationToken = Guid.NewGuid();
         _db.Events.Add(evt);
         await _db.SaveChangesAsync();
 
-        return CreatedAtAction(
-            nameof(GetById),
-            new { id = evt.Id },
+        return Created(
+            $"/api/events/{evt.Id}",
             RegistrationService.ToDto(evt, 0, GetBaseUrl()));
     }
 
@@ -81,11 +86,18 @@ public class EventsController : ControllerBase
                 $"Capacity cannot be set below current registrations ({registrationCount})."));
         }
 
+        var (templateOk, templateError) = await _templateValidation.ApplyTemplateAsync(evt);
+        if (!templateOk)
+            return BadRequest(new ErrorResponse(templateError!));
+
         existing.Name = evt.Name;
         existing.GameType = evt.GameType;
+        existing.PlayFormat = evt.PlayFormat;
         existing.StartDatetime = evt.StartDatetime;
         existing.EndDatetime = evt.EndDatetime;
         existing.PlayerCapacity = evt.PlayerCapacity;
+        existing.MinPlayers = evt.MinPlayers;
+        existing.ShowMinPlayersOnEvent = evt.ShowMinPlayersOnEvent;
 
         await _db.SaveChangesAsync();
         return NoContent();

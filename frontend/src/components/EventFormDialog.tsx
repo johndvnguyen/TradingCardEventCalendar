@@ -1,15 +1,19 @@
-import { FormEvent, useEffect, useState } from 'react';
-import type { EventDto, EventPayload, GameType } from '../types';
+import { FormEvent, useEffect, useMemo, useState } from 'react';
+import type { EventDto, EventPayload, GameTypeTemplate, PlayFormat } from '../types';
 import { defaultEndFromStart, localInputToIso, toLocalDatetimeInputValue } from '../utils/dates';
 
 interface EventFormDialogProps {
   open: boolean;
-  gameTypes: GameType[];
+  gameTypes: GameTypeTemplate[];
   initialDate?: string;
   editingEvent?: EventDto | null;
   onClose: () => void;
   onSave: (payload: EventPayload, eventId?: number) => Promise<void>;
   onDelete?: (eventId: number) => Promise<void>;
+}
+
+function findFormat(gameTypes: GameTypeTemplate[], gameTypeName: string, formatName: string): PlayFormat | undefined {
+  return gameTypes.find((g) => g.name === gameTypeName)?.playFormats.find((f) => f.name === formatName);
 }
 
 export function EventFormDialog({
@@ -23,11 +27,22 @@ export function EventFormDialog({
 }: EventFormDialogProps) {
   const [name, setName] = useState('');
   const [gameType, setGameType] = useState('');
+  const [playFormat, setPlayFormat] = useState('');
   const [startDatetime, setStartDatetime] = useState('');
   const [endDatetime, setEndDatetime] = useState('');
   const [playerCapacity, setPlayerCapacity] = useState(16);
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+
+  const selectedGame = useMemo(
+    () => gameTypes.find((g) => g.name === gameType),
+    [gameTypes, gameType],
+  );
+
+  const selectedFormat = useMemo(
+    () => selectedGame?.playFormats.find((f) => f.name === playFormat),
+    [selectedGame, playFormat],
+  );
 
   useEffect(() => {
     if (!open) return;
@@ -35,37 +50,95 @@ export function EventFormDialog({
     if (editingEvent) {
       setName(editingEvent.name);
       setGameType(editingEvent.gameType);
+      setPlayFormat(editingEvent.playFormat);
       setStartDatetime(toLocalDatetimeInputValue(editingEvent.startDatetime));
       setEndDatetime(toLocalDatetimeInputValue(editingEvent.endDatetime));
       setPlayerCapacity(editingEvent.playerCapacity);
     } else {
+      const firstGame = gameTypes[0];
+      const firstFormat = firstGame?.playFormats[0];
       setName('');
-      setGameType(gameTypes[0]?.name ?? '');
-      setPlayerCapacity(gameTypes[0]?.maxCapacity ?? 16);
+      setGameType(firstGame?.name ?? '');
+      setPlayFormat(firstFormat?.name ?? '');
+      setPlayerCapacity(firstFormat?.defaultCapacity ?? 16);
       const start = initialDate ?? '';
       setStartDatetime(start);
-      setEndDatetime(start ? toLocalDatetimeInputValue(defaultEndFromStart(localInputToIso(start))) : '');
+      if (start && firstFormat) {
+        setEndDatetime(
+          toLocalDatetimeInputValue(
+            defaultEndFromStart(localInputToIso(start), firstFormat.defaultDurationHours),
+          ),
+        );
+      } else {
+        setEndDatetime('');
+      }
     }
     setError(null);
   }, [open, editingEvent, initialDate, gameTypes]);
 
+  const applyFormatDefaults = (format: PlayFormat, startValue?: string) => {
+    setPlayerCapacity(format.defaultCapacity);
+    const start = startValue ?? startDatetime;
+    if (start) {
+      setEndDatetime(
+        toLocalDatetimeInputValue(
+          defaultEndFromStart(localInputToIso(start), format.defaultDurationHours),
+        ),
+      );
+    }
+  };
+
   const handleGameTypeChange = (value: string) => {
     setGameType(value);
-    const selected = gameTypes.find((gt) => gt.name === value);
-    if (selected && !editingEvent) setPlayerCapacity(selected.maxCapacity);
+    if (editingEvent) return;
+    const game = gameTypes.find((g) => g.name === value);
+    const firstFormat = game?.playFormats[0];
+    if (firstFormat) {
+      setPlayFormat(firstFormat.name);
+      applyFormatDefaults(firstFormat);
+    }
+  };
+
+  const handlePlayFormatChange = (value: string) => {
+    setPlayFormat(value);
+    if (editingEvent) return;
+    const format = findFormat(gameTypes, gameType, value);
+    if (format) applyFormatDefaults(format);
   };
 
   const handleStartChange = (value: string) => {
     setStartDatetime(value);
-    if (!editingEvent && value) {
-      setEndDatetime(toLocalDatetimeInputValue(defaultEndFromStart(localInputToIso(value))));
+    const format = selectedFormat;
+    if (!editingEvent && value && format) {
+      setEndDatetime(
+        toLocalDatetimeInputValue(
+          defaultEndFromStart(localInputToIso(value), format.defaultDurationHours),
+        ),
+      );
     }
+  };
+
+  const validateCapacity = (format: PlayFormat, capacity: number): string | null => {
+    if (capacity < format.minPlayers) {
+      return `${format.name} requires at least ${format.minPlayers} players.`;
+    }
+    if (format.maxCapacity !== null && capacity > format.maxCapacity) {
+      return `${format.name} allows at most ${format.maxCapacity} players.`;
+    }
+    return null;
   };
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setSaving(true);
     setError(null);
+
+    const format = selectedFormat;
+    if (!format) {
+      setError('Please select a valid play format.');
+      setSaving(false);
+      return;
+    }
 
     const startIso = localInputToIso(startDatetime);
     const endIso = localInputToIso(endDatetime);
@@ -76,9 +149,17 @@ export function EventFormDialog({
       return;
     }
 
+    const capacityError = validateCapacity(format, playerCapacity);
+    if (capacityError) {
+      setError(capacityError);
+      setSaving(false);
+      return;
+    }
+
     const payload: EventPayload = {
       name: name.trim(),
       gameType,
+      playFormat,
       startDatetime: startIso,
       endDatetime: endIso,
       playerCapacity,
@@ -112,6 +193,9 @@ export function EventFormDialog({
 
   if (!open) return null;
 
+  const capacityMin = selectedFormat?.minPlayers ?? 1;
+  const capacityMax = selectedFormat?.maxCapacity ?? undefined;
+
   return (
     <div className="modal-backdrop" onClick={onClose}>
       <dialog open className="modal" onClick={(e) => e.stopPropagation()}>
@@ -141,6 +225,26 @@ export function EventFormDialog({
             ))}
           </select>
 
+          <label htmlFor="play-format">Play Format</label>
+          <select
+            id="play-format"
+            value={playFormat}
+            onChange={(e) => handlePlayFormatChange(e.target.value)}
+            required
+          >
+            {(selectedGame?.playFormats ?? []).map((pf) => (
+              <option key={pf.id} value={pf.name}>
+                {pf.name}
+              </option>
+            ))}
+          </select>
+
+          {selectedFormat && selectedFormat.minPlayers > 2 && (
+            <p className="hint">
+              This format requires at least {selectedFormat.minPlayers} players.
+            </p>
+          )}
+
           <label htmlFor="start-datetime">Start Date &amp; Time</label>
           <input
             id="start-datetime"
@@ -163,7 +267,8 @@ export function EventFormDialog({
           <input
             id="player-capacity"
             type="number"
-            min={1}
+            min={capacityMin}
+            max={capacityMax}
             value={playerCapacity}
             onChange={(e) => setPlayerCapacity(parseInt(e.target.value, 10))}
             required

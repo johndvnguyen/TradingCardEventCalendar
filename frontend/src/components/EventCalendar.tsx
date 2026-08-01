@@ -1,10 +1,11 @@
-import { useCallback, useRef, useState } from 'react';
+import type { EventInput } from '@fullcalendar/core';
+import { useCallback, useState } from 'react';
 import FullCalendar from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import listPlugin from '@fullcalendar/list';
 import interactionPlugin from '@fullcalendar/interaction';
-import type { DateClickArg, EventClickArg, EventInput } from '@fullcalendar/core';
+import type { DateClickArg, EventClickArg } from '@fullcalendar/core';
 import { api } from '../api/client';
 import type { EventDto } from '../types';
 
@@ -17,7 +18,7 @@ interface EventCalendarProps {
 function toCalendarEvent(evt: EventDto): EventInput {
   return {
     id: String(evt.id),
-    title: evt.name,
+    title: `${evt.name} (${evt.playFormat})`,
     start: evt.startDatetime,
     end: evt.endDatetime,
     extendedProps: { eventData: evt },
@@ -25,11 +26,14 @@ function toCalendarEvent(evt: EventDto): EventInput {
 }
 
 export function EventCalendar({ onDateClick, onEventClick, refreshKey }: EventCalendarProps) {
-  const calendarRef = useRef<FullCalendar>(null);
   const [error, setError] = useState<string | null>(null);
 
   const loadEvents = useCallback(
-    async (info: { startStr: string; endStr: string }, successCallback: (events: EventInput[]) => void, failureCallback: (err: Error) => void) => {
+    async (
+      info: { startStr: string; endStr: string },
+      successCallback: (events: EventInput[]) => void,
+      failureCallback: (err: Error) => void,
+    ) => {
       try {
         setError(null);
         const events = await api.getEvents(info.startStr, info.endStr);
@@ -56,7 +60,6 @@ export function EventCalendar({ onDateClick, onEventClick, refreshKey }: EventCa
     <div className="calendar-shell">
       {error && <div className="message message-error">{error}</div>}
       <FullCalendar
-        ref={calendarRef}
         plugins={[dayGridPlugin, timeGridPlugin, listPlugin, interactionPlugin]}
         initialView="dayGridMonth"
         headerToolbar={{

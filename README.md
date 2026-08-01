@@ -1,15 +1,43 @@
 # Trading Card Event Calendar
 
-A lightweight event calendar web application for trading card games. Schedule events, share registration QR codes, and let players register online with server-enforced capacity limits.
+A lightweight event calendar web application for trading card games. Schedule events using game-type templates, share registration QR codes, and let players register online with server-enforced capacity limits.
 
 ## Features
 
 - **React + FullCalendar** — month, week, and list views
-- **Schedule events** — name, game type, start/end time, player capacity
+- **Play format templates** — each game type has formats with their own capacity rules and defaults
+- **Schedule events** — name, game type, play format, start/end time, player capacity
 - **Registration** — unique link + QR code per event; capacity enforced on the server
-- **Calendar invites** — download `.ics` files via `react-icalendar-link` (Google Calendar, Outlook, Apple Calendar)
+- **Calendar invites** — download `.ics` files (Google Calendar, Outlook, Apple Calendar)
 - **SQLite + C# API** — ASP.NET Core backend with Entity Framework Core
 - **Docker deployment** — single `docker compose up` builds React UI and API
+
+## Play Format Templates
+
+Each **GameType** has one or more **PlayFormat** templates that control:
+
+| Field | Purpose |
+|-------|---------|
+| `defaultCapacity` | Pre-fills the capacity input when scheduling |
+| `minPlayers` | Minimum allowed capacity (enforced client + server) |
+| `maxCapacity` | Optional upper cap (`null` = no limit) |
+| `defaultDurationHours` | Pre-fills end time from start |
+| `showMinPlayersOnEvent` | Shows "Minimum N players" on event pages |
+
+### Seeded formats
+
+**Magic: The Gathering**
+
+| Format | Default cap | Min | Max |
+|--------|-------------|-----|-----|
+| Standard | 32 | 2 | — |
+| Modern | 32 | 2 | — |
+| Commander | 16 | 2 | — |
+| Draft | 8 | 8 | 24 |
+
+**Pokemon TCG** — Standard, Expanded, Limited (min 2, no max)
+
+**Yu-Gi-Oh!** — Advanced, Traditional, Sealed (min 2; Sealed max 16)
 
 ## Quick Start (Docker)
 
@@ -30,8 +58,6 @@ cd backend/TradingCardEventCalendar.Api
 dotnet run
 ```
 
-API runs at [http://localhost:5000](http://localhost:5000).
-
 ### Frontend
 
 Requires Node.js 18+ (20 recommended).
@@ -42,55 +68,52 @@ npm install
 npm run dev
 ```
 
-UI runs at [http://localhost:5173](http://localhost:5173) and proxies `/api` to the backend.
+UI at [http://localhost:5173](http://localhost:5173) proxies `/api` to port 5000.
 
-Production build output goes to `backend/TradingCardEventCalendar.Api/wwwroot`:
+Production build:
 
 ```bash
 cd frontend
 npm run build
 ```
 
-Then run the backend to serve the built React app.
+## Database reset
 
-## Routes
+The project uses `EnsureCreated()`. After schema changes, delete the database and restart:
 
-| Route | Description |
-|-------|-------------|
-| `/` | Calendar home |
-| `/event/:token` | Event page with QR code and calendar invite |
-| `/register/:token` | Player registration form |
+```bash
+# Local
+rm backend/TradingCardEventCalendar.Api/Data/calendar.db
+
+# Docker — remove the volume
+docker compose down -v
+docker compose up --build
+```
 
 ## API Endpoints
 
 | Method | Path | Description |
 |--------|------|-------------|
+| GET | `/api/gametypes` | Game types with nested play format templates |
 | GET | `/api/events` | List events |
-| POST | `/api/events` | Create event |
+| POST | `/api/events` | Create event (template validation) |
 | PUT | `/api/events/{id}` | Update event |
 | DELETE | `/api/events/{id}` | Delete event |
 | GET | `/api/events/public/{token}` | Public event details |
 | POST | `/api/events/public/{token}/register` | Register player (409 when full) |
-| GET | `/api/gametypes` | List game types |
 
 ## Project Structure
 
 ```
 TradingCardEventCalendar/
-├── frontend/              # React + Vite + FullCalendar + react-icalendar-link
+├── frontend/              # React + Vite + FullCalendar
 ├── backend/TradingCardEventCalendar.Api/
-│   ├── Controllers/
-│   ├── Data/
-│   ├── Models/
-│   ├── Services/
-│   └── wwwroot/           # React production build output
+│   ├── Models/            # GameType, PlayFormat, Event, ...
+│   ├── Services/          # TemplateValidationService, RegistrationService
+│   └── wwwroot/           # React production build
 ├── Dockerfile
 └── docker-compose.yml
 ```
-
-## Schema changes
-
-If upgrading from an older database, delete `backend/TradingCardEventCalendar.Api/Data/calendar.db` and restart so EF Core can recreate the schema (includes `EndDatetime`, `RegistrationToken`, and `EventRegistrations`).
 
 TODO:
 Core functionality seems to be working was able to test adding events, adding registrations, see QR code and ICS generation
@@ -112,6 +135,7 @@ Removed:
 -The entire PlayerController as the only interaction with the players is on registration. Theres no player maniuplation outside the context of an event
 -getEvent frontend endpoint
 -An Extra tsconfig.app.json was created and is unused
+-EventPageUrl was not really being used as event pages are not needed just registration and the calendar itself
 
 AI input:
 Create a small calendar web application that uses a docker container for local deployment. The calendar will have an option to schedule events, view events. The backend will use a sqlite db. The backend code should use c#.
