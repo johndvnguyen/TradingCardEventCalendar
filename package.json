@@ -1,0 +1,10 @@
+{
+  "name": "trading-card-event-calendar",
+  "private": true,
+  "scripts": {
+    "build:frontend": "npm run build --prefix frontend",
+    "build": "npm run build:frontend",
+    "start:api": "dotnet run --project backend/TradingCardEventCalendar.Api/TradingCardEventCalendar.Api.csproj",
+    "start": "npm run build:frontend && npm run start:api"
+  }
+}

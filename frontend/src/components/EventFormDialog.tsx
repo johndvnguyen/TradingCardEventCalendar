@@ -16,6 +16,17 @@ function findFormat(gameTypes: GameTypeTemplate[], gameTypeName: string, formatN
   return gameTypes.find((g) => g.name === gameTypeName)?.playFormats.find((f) => f.name === formatName);
 }
 
+const MAX_EVENT_NAME_LENGTH = 100;
+
+function validateEventName(name: string): string | null {
+  const trimmed = name.trim();
+  if (!trimmed) return 'Event name is required.';
+  if (trimmed.length > MAX_EVENT_NAME_LENGTH) {
+    return `Event name must be ${MAX_EVENT_NAME_LENGTH} characters or fewer.`;
+  }
+  return null;
+}
+
 export function EventFormDialog({
   open,
   gameTypes,
@@ -140,6 +151,13 @@ export function EventFormDialog({
       return;
     }
 
+    const nameError = validateEventName(name);
+    if (nameError) {
+      setError(nameError);
+      setSaving(false);
+      return;
+    }
+
     const startIso = localInputToIso(startDatetime);
     const endIso = localInputToIso(endDatetime);
 
@@ -208,7 +226,7 @@ export function EventFormDialog({
             value={name}
             onChange={(e) => setName(e.target.value)}
             required
-            maxLength={200}
+            maxLength={MAX_EVENT_NAME_LENGTH}
           />
 
           <label htmlFor="game-type">Game Type</label>
