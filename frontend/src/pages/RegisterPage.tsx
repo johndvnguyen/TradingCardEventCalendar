@@ -86,16 +86,6 @@ export function RegisterPage() {
         <dd>{event.isFull ? 'None — event is full' : String(event.spotsRemaining)}</dd>
       </dl>
 
-      <div className="ics-section compact">
-        <CalendarInviteButton
-          title={event.name}
-          description={description}
-          startDatetime={event.startDatetime}
-          endDatetime={event.endDatetime}
-          registrationUrl={event.registrationUrl}
-        />
-      </div>
-
       {event.isFull && (
         <div className="message message-warning">This event is full. Registration is closed.</div>
       )}
@@ -122,7 +112,15 @@ export function RegisterPage() {
       )}
 
       {success && <div className="message message-success">{success}</div>}
-
+      {success && <div className="ics-section compact">
+        <CalendarInviteButton
+          title={event.name}
+          description={description}
+          startDatetime={event.startDatetime}
+          endDatetime={event.endDatetime}
+          registrationUrl={event.registrationUrl}
+        />
+      </div>}
       <p className="hint">
         <Link to={`/event/${token}`}>View event page</Link>
       </p>

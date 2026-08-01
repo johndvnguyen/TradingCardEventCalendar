@@ -93,11 +93,11 @@ TradingCardEventCalendar/
 If upgrading from an older database, delete `backend/TradingCardEventCalendar.Api/Data/calendar.db` and restart so EF Core can recreate the schema (includes `EndDatetime`, `RegistrationToken`, and `EventRegistrations`).
 
 TODO:
-Core functionality seems to be working was able to test adding events, adding registrations
+Core functionality seems to be working was able to test adding events, adding registrations, see QR code and ICS generation
 BUG Event Registration page does not update Spots Left value when submitting (display only issue). Manipulating the db directly or opening multiple registration pages correctly rejects registrations, but the displayed count is wrong and awkward
 CLEAN UP bloat code
 Rethink the templating, I think the prompt actually meant that it should have variable fields based on game type
-Ensure ICS for registration only shows after the player is registered
+
 
 ## Design write-up (~1 page)** answering:
      - How did you determine and enforce how many people can attend an event? Where does capacity live, and what happens under concurrent registrations for the last seat?
