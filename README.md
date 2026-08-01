@@ -168,7 +168,9 @@ erDiagram
 
 ## Design write-up questions answering:
      - How did you determine and enforce how many people can attend an event? Where does capacity live, and what happens under concurrent registrations for the last seat?
-     Based on the requirements there is a maximum of 30 players, I used cursor and personal knowledge to add some more limits like minimum players per format. For the concurrency I  ensured that the check happens in the backend as well as the front end. Also added explicit db locking on writes. 
+     Based on the requirements there is a maximum of 30 players, I used cursor and personal knowledge to add some more limits like minimum players per format. 
+     The capacity lives in the Event table, when registering a user this value is checked
+     For the concurrency I  ensured that the check happens in the backend as well as the front end. Also added explicit db locking on writes. 
      - How does your template system work, and what would adding a 4th game (or a non-card game) require?
      The template system has two entities GameType, and Format. Currently you can add default values to the AppDbContext.cs file for both GameType and any associated play formats. I ran out of time here, but I should have added a controller to add a new gameType.
      - What did you deliberately cut or fake to stay in the timebox, and what would you build next?
@@ -180,6 +182,8 @@ erDiagram
      Another additional feature that would be helpful is a player list, and even exporting functions/integrations with bracketing software like challonge or melee.
      Adding a share option for the QR code to quickly print or send to socials
      Adding a recurring event option 
+     Theres no state of an event being started, could add that and validation for minimum number of players.
+     Event duration is also in a weird state not sure how much its needed I'd assume most events would just run until they are done, totally get they are used for the ICS calendar files though.     
 
 ## AI usage note (a few sentences):** which tools you used and for what, and one example of AI output you rejected or had to fix.
 I used cursor for most of the code generation with the following initial input. I followed up with some additions to the eventRegistration and QR code features I missed. I also used AI to do some troubleshooting with my docker and wsl installation as my personal machine did not have these
